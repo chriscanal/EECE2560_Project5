@@ -29,6 +29,7 @@ class maze
       void mapMazeToGraph(graph &g);
 	  bool findPathRecursive(graph &g, int id);
       void findPathNonRecursive(graph &g);
+      void printPath(graph &g, int id);
 
    private:
       int rows; // number of rows in the maze
@@ -77,7 +78,7 @@ void maze::print(int goalI, int goalJ, int currI, int currJ)
    {
       for (int j = 0; j <= cols-1; j++)
       {
-	 if (i == goalI && j == goalJ)
+	if (i == goalI && j == goalJ)
 	    cout << "*";
 	 else
 	    if (i == currI && j == currJ)
@@ -183,25 +184,80 @@ int hello = 0;
 
 bool maze::findPathRecursive(graph &g, int id) {
     //check for path going up
-	cout << "This is the " << hello << " recursion\n";
+    int dst;
     if(id == g.numNodes() - 1) {
-		cout << "\n" << id;
+        g.mark(id);
+		cout << "\n";
         return true;
     } else {
         for(int i = 0; i < 4; i++)
         //checks the four directions
         {
-            g.visit(id, setDirection(i, id, cols));
-            if(findPathRecursive(g, id)) {
-                g.mark(id);
-                return true;
+            dst = setDirection(i, id, cols);
+            if(!(dst < 0 | dst >= g.numNodes())) {
+                if(!g.isVisited(dst)) {
+                    g.visit(id);
+                    if(g.isEdge(id, dst)) {
+                        if(findPathRecursive(g, dst)) {
+                            g.mark(id);
+                            return true;
+                        }
+                    }
+
+                }
+
             }
+
         }
         return false;
     }
 
 }
 
+void maze::printPath(graph &g, int id) {
+
+    int dst;
+    int dir;
+    if(id == g.numNodes() - 1) {
+		cout << "End of path :)\n";
+    } else {
+        for(int i = 0; i < 4; i++)
+        //checks the four directions
+        {
+            dst = setDirection(i, id, cols);
+            if(dst >= 0 && dst < g.numNodes()) {
+                if(!g.isVisited(dst) && g.isMarked(dst)) {
+                    g.visit(id);
+                    dir = dst - id;
+                    if(dir == - cols) {
+                        cout << "Go up\n";
+                        printPath(g, dst);
+                        return;
+                    } else if(dir == cols) {
+                        cout << "Go down\n";
+                        printPath(g, dst);
+                        return;
+                    } else if(dir == 1) {
+                        cout << "Go right \n";
+                        printPath(g, dst);
+                        return;
+                    } else if(dir == -1){
+                        cout << "go left\n";
+                        printPath(g, dst);
+                        return;
+                    } else {
+                        cout << "bad direction\n";
+                    }
+
+                }
+
+            } else if (id != 0 && i == 4) {
+                cout << "\nno path\n";
+            }
+
+        }
+    }
+}
 
 
 //void maze::findPathNonRecursive(graph &g){
@@ -235,7 +291,8 @@ int main()
 		 cout << g;
 		 m.print(0,0,2,2);
 		 m.findPathRecursive(g, 0);
-
+         g.clearVisit();
+         m.printPath(g, 0);
       }
 
    }

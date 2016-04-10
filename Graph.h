@@ -395,6 +395,7 @@ class graph
    const edge &getEdge(int i, int j) const;
 
    void printNodes() const;
+   void printNodesMarked() const;
    void printEdges() const;
 
    void mark(int i);
@@ -660,6 +661,18 @@ void graph::printNodes() const
 
    for (int i = 0; i < numNodes(); i++)
       cout << getNode(i);
+}
+
+void graph::printNodesMarked() const
+// Print all nodes.
+{
+   cout << "Num nodes: " << numNodes() << endl;
+
+   for (int i = 0; i < numNodes(); i++)
+        if(getNode(i).isMarked()) {
+            cout << getNode(i) << endl;
+        }
+
 }
 
 void graph::printEdges() const
