@@ -352,11 +352,27 @@ void maze::findPathNonRecursive(graph &g)
     }
 }
 */
+void printStack(std::stack<int> theStack){
+    int id = 0;
+    cout << "{ ";
+    while (theStack.size() > 0){
+        id = theStack.top();
+        theStack.pop();
+        cout << id;
+        if (theStack.size() == 0){
+        } else {
+            cout << ", ";
+        }
+    }
+    cout << " }\n";
+}
+
 void maze::findPathNonRecursive(graph &g)
 {
     int maxDepth = 1;
     int destinationNode = 0;
     int id = 0;
+    bool pathValid;
     std::stack<int> pathStack;
     std::stack<int> visitingStack;
     visitingStack.push(id);
@@ -364,40 +380,67 @@ void maze::findPathNonRecursive(graph &g)
         id = 0;
         visitingStack.push(id);
         while (!visitingStack.empty()){
+            cout << "\n\n---------------NEW NODE---------------\n";
             id = visitingStack.top();
+            pathValid = false;
             cout << "\nCurrent node visiting: " << id;
             pathStack.push(id);
-            cout << "\npathStack thus far: ";
-            //std::cout << pathStack;
+            cout << "\n\npathStack thus far: ";
+            printStack(pathStack);
             cout << "\nvisitingStack thus far: ";
-            //std::cout << pathStack;
+            printStack(visitingStack);
             visitingStack.pop();
             for(int i = 0; i < 4; i++)
             //checks the four directions
             {
+                cout << "\n----Iteration: " << i << "----";
                 destinationNode = setDirection(i, id, cols);
                 if(destinationNode > 0 && destinationNode <= g.numNodes()) {
+                    cout << "\nDestination is within bounds";
                     if(!g.isVisited(destinationNode))
                     {
+                        cout << "\nThe " << destinationNode << " node has not been visited";
                         g.visit(id);
                         if(g.isEdge(id, destinationNode))
                         {
+                            cout << "\nThere is an edge";
                             if (pathStack.size() <= maxDepth){
-                                visitingStack.push(id);
+                                cout << "\nPushed node: " << destinationNode;
+                                visitingStack.push(destinationNode);
+                                pathValid = true;
                             } else if (i == 3){
-                                pathStack.pop();
+                                cout << "\nThe maxDepth has been reached";
+                            } else {
+                                cout << "\nThe maxDepth has been reached";
                             }
                         } else if (i == 3){
-                            pathStack.pop();
+                            cout << "\nThere is no edge to this node";
+                        } else {
+                            cout << "\nThere is no edge to this node";
                         }
                     } else if (i == 3){
-                        pathStack.pop();
+                        cout << "\nThe node has been visited";
+                    } else {
+                        cout << "\nThe node has been visited";
                     }
+                } else {
+                    cout << "\nDestination Out of Bounds";
                 }
+            }
+            if (!pathValid){
+                cout << "\n-- PATHSTACK POP --";
+                pathStack.pop();
             }
         }
         maxDepth++;
-        cout << "\nThe maxDepth is " << maxDepth;
+        cout << "\n\n================= NEW MAX DEPTH =================n";
+        cout << "\n\nThe maxDepth is " << maxDepth << "\n\n";
+        while (!pathStack.empty()){
+            pathStack.pop();
+        }
+        while (!visitingStack.empty()){
+            visitingStack.pop();
+        }
         g.clearVisit();
     }
 }
