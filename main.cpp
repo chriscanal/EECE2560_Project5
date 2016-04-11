@@ -33,6 +33,7 @@ class maze
 	  bool findPathRecursive(graph &g, int id);
       void findPathNonRecursive(graph &g);
       void printPath(graph &g, int id);
+      bool isNotDeadEnd(graph &g, int n, int cols);
 
    private:
       int rows; // number of rows in the maze
@@ -366,7 +367,7 @@ void printStack(std::stack<int> theStack){
     }
     cout << " }\n";
 }
-
+/*
 void maze::findPathNonRecursive(graph &g)
 {
     int maxDepth = 1;
@@ -454,8 +455,87 @@ void maze::findPathNonRecursive(graph &g)
         }
         g.clearVisit();
     }
+}*/
+void maze::findPathNonRecursive(graph &g)
+{
+    int id = 0;
+    std::stack<int> pathStack;
+    std::stack<int> visitingStack;
+    std::stack<int> popNumbers;
+    visitingStack.push(id);
+    while(!visitingStack.empty()) {
+        int n = visitingStack.top();
+        g.visit(n);
+        //cout << "\n n: " << n;
+        visitingStack.pop();
+        if(n == g.numNodes() - 1) {
+            cout << "end of path\n";
+            break;
+        }
+        if(n + 1 < (g.numNodes() - 1) && (n + 1) >= 0) {
+            if(g.isEdge(n, n + 1) && !g.isVisited(n + 1)) {
+                visitingStack.push(n + 1);
+            }
+        }
+        if(n + cols < (g.numNodes() - 1) && (n + cols) >= 0) {
+            if(g.isEdge(n, n + cols) && !g.isVisited(n + cols)) {
+                visitingStack.push(n + cols);
+            }
+        }
+        if(n - 1 < (g.numNodes() - 1) && (n - 1) >= 0) {
+            if(g.isEdge(n, n - 1) && !g.isVisited(n - 1)) {
+                visitingStack.push(n - 1);
+            }
+        }
+        if(n - cols < (g.numNodes() - 1) && (n - cols) >= 0) {
+            if(g.isEdge(n, n - cols) && !g.isVisited(n - cols)) {
+                visitingStack.push(n - cols);
+            }
+        }
+        if(isNotDeadEnd(g, n, cols)) {
+            pathStack.push(n);
+        }
+        /*
+        while(!isNotDeadEnd(g, n, cols)) {
+            pathStack.pop();
+            n = pathStack.top();
+        }*/
+
+
+    }
+
+    printStack(visitingStack);
+    printStack(pathStack);
+    while(!pathStack.empty()) {
+        id = pathStack.top();
+        g.mark(id);
+        pathStack.pop();
+    }
+    g.printNodesMarked();
 }
 
+bool maze::isNotDeadEnd(graph &g, int n, int cols) {
+    if(n + 1 < (g.numNodes() - 1) && (n + 1) >= 0) {
+        if(g.isEdge(n, n + 1) && !g.isVisited(n+1)) {
+            return true;
+        }
+    }
+    if(n + cols < (g.numNodes() - 1) && (n + cols) >= 0) {
+        if(g.isEdge(n, n + cols) && !g.isVisited(n + cols)) {
+            return true;
+        }
+    }
+    if(n - 1 < (g.numNodes() - 1) && (n - 1) >= 0) {
+        if(g.isEdge(n, n - 1) && !g.isVisited(n - 1)) {
+            return true;
+        }
+    }
+    if(n - cols < (g.numNodes() - 1) && (n - cols) >= 0) {
+        if(g.isEdge(n, n - cols) && !g.isVisited(n - cols)) {
+            return true;
+        }
+    }
+}
 
 int main()
 {
@@ -485,6 +565,7 @@ int main()
 		 m.findPathNonRecursive(g);
          g.clearVisit();
          m.printPath(g, 0);
+
 
       }
 
