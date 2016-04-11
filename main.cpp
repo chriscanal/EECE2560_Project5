@@ -14,6 +14,7 @@
 #include <fstream>
 #include "d_matrix.h"
 #include "Graph.h"
+#include <list>
 
 using namespace std;
 
@@ -213,7 +214,6 @@ bool maze::findPathRecursive(graph &g, int id) {
 }
 
 void maze::printPath(graph &g, int id) {
-
     int dst;
     int dir;
     if(id == g.numNodes() - 1) {
@@ -249,7 +249,7 @@ void maze::printPath(graph &g, int id) {
 
                 }
 
-            } else if (id != 0) {
+            } else if (id != 0 && i == 4) {
                 cout << "\nno path\n";
             }
 
@@ -257,12 +257,121 @@ void maze::printPath(graph &g, int id) {
     }
 }
 
+/*
+bool maze::findPathNonRecursive(graph &g){
+    int pathLength = 0;
+    bool mazeExitFound = false;
+    int dst;
+    int dir;
+    int id = 0;
+	while (!mazeExitFound){
+        if(id == g.numNodes() - 1) {
+    		cout << "End of path :)\n";
+            mazeExitFound = true;
+        } else {
+            if(id == g.numNodes() - 1) {
+                g.mark(id);
+        		cout << "\n";
+                return true;
+            } else {
+                for(int i = 0; i < 4; i++)
+                //checks the four directions
+                {
+                    dst = setDirection(i, id, cols);
+                    if(!(dst < 0 | dst >= g.numNodes())) {
+                        if(!g.isVisited(dst)) {
+                            g.visit(id);
+                            if(g.isEdge(id, dst)) {
+                                if(findPathRecursive(g, dst)) {
+                                    g.mark(id);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+		pathLength++;
+    }
+}
+*/
 
-//void maze::findPathNonRecursive(graph &g){
-//	while (graphNotSolved){
-//		push
+void maze::findPathNonRecursive(graph &g)
+{
+    int maxDepth = 1;
+    int destinationNode = 0;
+    int id = 0;
+    std::stack<int> pathStack;
+    std::stack<int> visitingStack;
+    visitingStack.push(id);
+    while (id != (g.numNodes() - 1)){
+        id = 0;
+        visitingStack.push(id);
+        while (!visitingStack.empty()){
+            id = visitingStack.top();
+            cout << "\nCurrent node visiting: " << id;
+            pathStack.push(id);
+            cout << "\npathStack thus far: ";
+            //std::cout << pathStack;
+            cout << "\nvisitingStack thus far: ";
+            printPathStack(s, cols);
+            visitingStack.pop();
+            for(int i = 0; i < 4; i++)
+            //checks the four directions
+            {
+                destinationNode = setDirection(i, id, cols);
+                if(destinationNode > 0 && destinationNode <= g.numNodes()) {
+                    if(!g.isVisited(destinationNode))
+                    {
+                        g.visit(id);
+                        if(g.isEdge(id, destinationNode))
+                        {
+                            if (pathStack.size() <= maxDepth){
+                                visitingStack.push(id);
+                            } else if (i == 3){
+                                pathStack.pop();
+                            }
+                        } else if (i == 3){
+                            pathStack.pop();
+                        }
+                    } else if (i == 3){
+                        pathStack.pop();
+                    }
+                }
+            }
+        }
+        maxDepth++;
+        cout << "\nThe maxDepth is " << maxDepth;
+        g.clearVisit();
+    }
+}
 
-//}
+void printPathStack(std::stack<int> st, int cols) {
+    int curr = st.top();
+    st.pop();
+    int dir;
+    while(!s.is_Empty()) {
+        int next = st.top();
+        st.pop();
+        dir = next - curr;
+        if(dir == -cols) {
+            cout << "Go up\n";
+        } else if(dir == cols) {
+            cout << "Go down\n";
+        } else if(dir == 1) {
+            cout << "Go right \n";
+        } else if(dir == -1){
+            cout << "go left\n";
+        } else {
+            cout << "bad direction\n";
+        }
+        curr = next;
+
+    }
+    cout << "End of path :)\n";
+}
 
 int main()
 {
@@ -270,7 +379,7 @@ int main()
    ifstream fin;
 
    // Read the maze from the file.
-   string fileName = "maze1.txt";
+   string fileName = "maze3.txt";
 
    fin.open(fileName.c_str());
    if (!fin)
@@ -288,7 +397,7 @@ int main()
 		 m.mapMazeToGraph(g);
 		 cout << g;
 		 m.print(0,0,2,2);
-		 m.findPathRecursive(g, 0);
+		 m.findPathNonRecursive(g);
          g.clearVisit();
          m.printPath(g, 0);
 
