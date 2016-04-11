@@ -376,22 +376,32 @@ void maze::findPathNonRecursive(graph &g)
     std::stack<int> pathStack;
     std::stack<int> visitingStack;
     std::stack<int> popNumbers;
-    int depthSinceBranch = 1;
+    int depthSinceBranch = 0;
+    popNumbers.push(depthSinceBranch);
     visitingStack.push(id);
+
     while (id != (g.numNodes() - 1)){
         id = 0;
         visitingStack.push(id);
+        popNumbers.push(depthSinceBranch);
         while (!visitingStack.empty()){
             cout << "\n\n---------------NEW NODE---------------\n";
             id = visitingStack.top();
             pathValid = false;
+
             cout << "\nCurrent node visiting: " << id;
             pathStack.push(id);
+
             cout << "\n\npathStack thus far: ";
             printStack(pathStack);
+
             cout << "\nvisitingStack thus far: ";
             printStack(visitingStack);
             visitingStack.pop();
+
+            cout << "\nPopNumbers Stack: ";
+            printStack(popNumbers);
+
             for(int i = 0; i < 4; i++)
             //checks the four directions
             {
@@ -411,22 +421,18 @@ void maze::findPathNonRecursive(graph &g)
                                 visitingStack.push(destinationNode);
                                 if (pathValid){
                                     popNumbers.push(depthSinceBranch);
+                                    depthSinceBranch = 1;
                                 } else {
                                     depthSinceBranch++;
+                                    cout << "\nIncreasing Depth since Branch to " << depthSinceBranch;
                                 }
                                 pathValid = true;
-                            } else if (i == 3){
-                                cout << "\nThe maxDepth has been reached";
                             } else {
                                 cout << "\nThe maxDepth has been reached";
                             }
-                        } else if (i == 3){
-                            cout << "\nThere is no edge to this node";
                         } else {
                             cout << "\nThere is no edge to this node";
                         }
-                    } else if (i == 3){
-                        cout << "\nThe node has been visited";
                     } else {
                         cout << "\nThe node has been visited";
                     }
@@ -434,14 +440,19 @@ void maze::findPathNonRecursive(graph &g)
                     cout << "\nDestination Out of Bounds";
                 }
             }
+            cout << "\nEnd of for loop\n";
+
             if (!pathValid){
-                int pops = popNumbers.size();
+                cout << "\nA dead end has been reached";
+                int pops = popNumbers.top();
+                popNumbers.pop();
+                cout << "\nAbout to pop " << pops << " nodes";
                 for (int x = 0; x < pops ; x++ ){
                     cout << "\n-- PATHSTACK POP --";
-                    popNumbers.pop();
+                    pathStack.pop();
                 }
-                popNumbers.pop();
             }
+            cout << "\nafter if";
         }
         maxDepth++;
         cout << "\n\n================= NEW MAX DEPTH =================n";
