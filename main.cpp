@@ -382,6 +382,7 @@ void maze::findPathNonRecursive(graph &g)
 
     while (id != (g.numNodes() - 1)){
         id = 0;
+        depthSinceBranch = 0;
         visitingStack.push(id);
         popNumbers.push(depthSinceBranch);
         while (!visitingStack.empty()){
@@ -463,6 +464,10 @@ void maze::findPathNonRecursive(graph &g)
         while (!visitingStack.empty()){
             visitingStack.pop();
         }
+        while (!popNumbers.empty()){
+            popNumbers.pop();
+        }
+
         g.clearVisit();
     }
 }
