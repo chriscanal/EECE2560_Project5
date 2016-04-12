@@ -34,12 +34,17 @@ class maze
       std::stack<int> findPathNonRecursive(graph &g);
       void printPath(graph &g, int id);
 
+      void stackToSolutionMap(std::stack<int> & solutionStack);
+      void printPathOnMaze();
+      void setSolutionMap(int i, int j);
+
    private:
       int rows; // number of rows in the maze
       int cols; // number of columns in the maze
 
       matrix<bool> value;
       matrix<int> map;      // Mapping from maze (i,j) values to node index values
+      matrix<int> solutionMap;
 };
 
 maze::maze(ifstream &fin)
@@ -63,6 +68,13 @@ maze::maze(ifstream &fin)
       }
 
    map.resize(rows,cols);
+   solutionMap.resize(rows,cols);
+   for (int i = 0; i <= rows-1; i++){
+       for (int j = 0; j <= cols-1; j++){
+           solutionMap[i][j] = false;
+       }
+   }
+
 }
 
 void maze::print(int goalI, int goalJ, int currI, int currJ)
@@ -109,6 +121,23 @@ bool maze::isLegal(int i, int j)
 
 
 // -------------------- Functions that cansym wrote --------------------
+void maze::stackToSolutionMap(std::stack<int> & solutionStack){
+    int current = 0;
+    int i;
+    int j;
+    while (!solutionStack.empty()){
+        current = solutionStack.top();
+        i = current/cols;
+        j = current%cols;
+        solutionMap[i][j] = true;
+        solutionStack.pop();
+    }
+}
+
+void maze::setSolutionMap(int i, int j){
+    solutionMap[i][j] = true;
+}
+
 void maze::mapMazeToGraph(graph &g)
 // Create a graph g that represents the legal moves in the maze m.
 {
@@ -163,6 +192,27 @@ void maze::setMap(int i, int j, int n)
 // Set mapping from maze cell (i,j) to graph node n.
 {
 	map[i][j] = n;
+}
+
+void maze::printPathOnMaze(){
+    {
+        cout << "\n";
+       for (int i = 0; i <= rows-1; i++)
+       {
+          for (int j = 0; j <= cols-1; j++){
+              if (solutionMap[i][j]){
+                   cout << "*";
+              } else if (value[i][j]){
+                  cout << " ";
+              }else{
+                  cout << "X";
+              }
+
+          }
+          cout << endl;
+       }
+       cout << endl;
+    }
 }
 
 int maze ::getMap(int i, int j) const
@@ -376,13 +426,14 @@ std::stack<int> maze::findPathNonRecursive(graph &g)
     std::stack<int> pathStack;
     std::stack<int> visitingStack;
     std::stack<int> popNumbers;
+    std::stack<int> tempStack;
     int depthSinceBranch = 0;
     popNumbers.push(depthSinceBranch);
     visitingStack.push(id);
 
+
     while (id != (g.numNodes() - 1)){
         id = 0;
-        depthSinceBranch = 0;
         visitingStack.push(id);
         popNumbers.push(depthSinceBranch);
         while (!visitingStack.empty()){
@@ -408,9 +459,10 @@ std::stack<int> maze::findPathNonRecursive(graph &g)
             {
                 cout << "\n----Iteration: " << i << "----";
                 destinationNode = setDirection(i, id, cols);
+                cout << "here";
                 if(destinationNode > 0 && destinationNode <= g.numNodes()) {
                     cout << "\nDestination " << destinationNode << " is within bounds";
-                    if (destinationNode == 400){
+                    if (destinationNode == g.numNodes()){
                         return pathStack;
                     }
                     if(!g.isVisited(destinationNode))
@@ -423,11 +475,15 @@ std::stack<int> maze::findPathNonRecursive(graph &g)
                             if (pathStack.size() <= maxDepth){
                                 cout << "\nPushed node: " << destinationNode;
                                 visitingStack.push(destinationNode);
+                                setSolutionMap(destinationNode/cols,destinationNode%cols);
+                                printPathOnMaze();
                                 if (pathValid){
                                     popNumbers.push(depthSinceBranch);
                                     depthSinceBranch = 1;
                                 } else {
-                                    depthSinceBranch++;
+                                    depthSinceBranch = popNumbers.top() + 1;
+                                    popNumbers.pop();
+                                    popNumbers.push(depthSinceBranch);
                                     cout << "\nIncreasing Depth since Branch to " << depthSinceBranch;
                                 }
                                 pathValid = true;
@@ -444,7 +500,6 @@ std::stack<int> maze::findPathNonRecursive(graph &g)
                     cout << "\nDestination Out of Bounds";
                 }
             }
-            cout << "\nEnd of for loop\n";
 
             if (!pathValid){
                 cout << "\nA dead end has been reached";
@@ -456,7 +511,6 @@ std::stack<int> maze::findPathNonRecursive(graph &g)
                     pathStack.pop();
                 }
             }
-            cout << "\nafter if";
         }
         maxDepth++;
         cout << "\n\n================= NEW MAX DEPTH =================n";
@@ -470,7 +524,8 @@ std::stack<int> maze::findPathNonRecursive(graph &g)
         while (!popNumbers.empty()){
             popNumbers.pop();
         }
-
+        depthSinceBranch = 0;
+        popNumbers.push(depthSinceBranch);
         g.clearVisit();
     }
 }
@@ -482,7 +537,7 @@ int main()
    ifstream fin;
 
    // Read the maze from the file.
-   string fileName = "maze3.txt";
+   string fileName = "maze1.txt";
 
    fin.open(fileName.c_str());
    if (!fin)
@@ -493,6 +548,7 @@ int main()
 
    try
    {
+      stack<int> solutions;
       graph g;
       while (fin && fin.peek() != 'Z')
       {
@@ -500,8 +556,11 @@ int main()
 		 m.mapMazeToGraph(g);
 		 cout << g;
 		 m.print(0,0,2,2);
+         m.findPathRecursive(g, 0);
          g.clearVisit();
-		 m.findPathNonRecursive(g);
+         solutions = m.findPathNonRecursive(g);
+		 m.stackToSolutionMap(solutions);
+         m.printPathOnMaze();
          g.clearVisit();
          m.printPath(g, 0);
 
