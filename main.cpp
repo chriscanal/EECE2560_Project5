@@ -414,9 +414,107 @@ int main()
 {
    char x;
    ifstream fin;
+   // Read the maze from the file.
+   string fileName = "maze1.txt";
+   cout << "\n OPENING: " << fileName << endl;
+
+   fin.open(fileName.c_str());
+   if (!fin)
+   {
+      cerr << "Cannot open " << fileName << endl;
+      exit(1);
+   }
+
+   try
+   {
+      graph g3;
+      while (fin && fin.peek() != 'Z')
+      {
+         maze m3(fin);
+		 m3.mapMazeToGraph(g3);
+		 m3.print(0,0,1,0);
+         g3.clearVisit();
+         g3.clearMark();
+         cout << "Recursive Path Finder\n";
+         cout << "*-------------------------------------------*\n";
+		 m3.findPathRecursive(g3, 0);
+         g3.clearVisit();
+         m3.printPath(g3, 0);
+         g3.clearMark();
+         g3.clearVisit();
+         cout << "\n\nNon-Recursive Path Finder (Depth First Search)\n";
+         cout << "*-------------------------------------------*\n";
+         m3.findPathNonRecursive(g3);
+         m3.printPathOnMaze();
+         g3.clearVisit();
+         m3.printPath(g3, 0);
+
+
+      }
+
+   }
+   catch (indexRangeError &ex)
+   {
+      cout << ex.what() << endl; exit(1);
+   }
+   catch (rangeError &ex)
+   {
+      cout << ex.what() << endl; exit(1);
+   }
+   fin.close();
 
    // Read the maze from the file.
-   string fileName = "maze3.txt";
+  fileName = "maze2.txt";
+  cout << "NOW OPENING: " << fileName << endl;
+
+   fin.open(fileName.c_str());
+   if (!fin)
+   {
+      cerr << "Cannot open " << fileName << endl;
+      exit(1);
+   }
+
+   try
+   {
+      graph g2;
+      while (fin && fin.peek() != 'Z')
+      {
+         maze m2(fin);
+		 m2.mapMazeToGraph(g2);
+		 m2.print(0,0,1,0);
+         g2.clearVisit();
+         g2.clearMark();
+         cout << "Recursive Path Finder\n";
+         cout << "*-------------------------------------------*\n";
+		 m2.findPathRecursive(g2, 0);
+         g2.clearVisit();
+         m2.printPath(g2, 0);
+         g2.clearMark();
+         g2.clearVisit();
+         cout << "\n\nNon-Recursive Path Finder (Depth First Search)\n";
+         cout << "*-------------------------------------------*\n";
+         m2.findPathNonRecursive(g2);
+         m2.printPathOnMaze();
+         g2.clearVisit();
+         m2.printPath(g2, 0);
+
+
+      }
+
+   }
+   catch (indexRangeError &ex)
+   {
+      cout << ex.what() << endl; exit(1);
+   }
+   catch (rangeError &ex)
+   {
+      cout << ex.what() << endl; exit(1);
+   }
+   fin.close();
+
+   // Read the maze from the file.
+  fileName = "maze3.txt";
+  cout << "NOW OPENING: " << fileName << endl;
 
    fin.open(fileName.c_str());
    if (!fin)
@@ -461,6 +559,7 @@ int main()
    {
       cout << ex.what() << endl; exit(1);
    }
+
 
 
 }
