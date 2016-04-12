@@ -33,13 +33,18 @@ class maze
 	  bool findPathRecursive(graph &g, int id);
       void findPathNonRecursive(graph &g);
       void printPath(graph &g, int id);
-      bool isNotDeadEnd(graph &g, int n, int cols);
+      bool isPath(graph &g, int n, int cols);
+
+      void stackToSolutionMap(std::stack<int> solutionStack);
+      void printPathOnMaze();
+      void setSolutionMap(int i, int j);
 
    private:
       int rows; // number of rows in the maze
       int cols; // number of columns in the maze
 
       matrix<bool> value;
+      matrix<int> solutionMap;
       matrix<int> map;      // Mapping from maze (i,j) values to node index values
 };
 
@@ -64,6 +69,12 @@ maze::maze(ifstream &fin)
       }
 
    map.resize(rows,cols);
+   solutionMap.resize(rows,cols);
+    for (int i = 0; i <= rows-1; i++){
+        for (int j = 0; j <= cols-1; j++){
+            solutionMap[i][j] = false;
+        }
+    }
 }
 
 void maze::print(int goalI, int goalJ, int currI, int currJ)
@@ -98,6 +109,7 @@ void maze::print(int goalI, int goalJ, int currI, int currJ)
    cout << endl;
 }
 
+
 bool maze::isLegal(int i, int j)
 // Return the value stored at the (i,j) entry in the maze.
 {
@@ -110,6 +122,44 @@ bool maze::isLegal(int i, int j)
 
 
 // -------------------- Functions that cansym wrote --------------------
+void maze::stackToSolutionMap(std::stack<int> solutionStack){
+    int current = 0;
+    int i;
+    int j;
+    while (!solutionStack.empty()){
+        current = solutionStack.top();
+        i = current/cols;
+        j = current%cols;
+        solutionMap[i][j] = true;
+        solutionStack.pop();
+    }
+}
+
+void maze::setSolutionMap(int i, int j){
+    solutionMap[i][j] = true;
+}
+
+void maze::printPathOnMaze(){
+    {
+        cout << "\n";
+       for (int i = 0; i <= rows-1; i++)
+       {
+          for (int j = 0; j <= cols-1; j++){
+              if (solutionMap[i][j]){
+                   cout << "*";
+              } else if (value[i][j]){
+                  cout << " ";
+              }else{
+                  cout << "X";
+              }
+
+          }
+          cout << endl;
+       }
+       cout << endl;
+    }
+}
+
 void maze::mapMazeToGraph(graph &g)
 // Create a graph g that represents the legal moves in the maze m.
 {
@@ -260,99 +310,7 @@ void maze::printPath(graph &g, int id) {
     }
 }
 
-/*
-bool maze::findPathNonRecursive(graph &g){
-    int pathLength = 0;
-    bool mazeExitFound = false;
-    int dst;
-    int dir;
-    int id = 0;
-	while (!mazeExitFound){
-        if(id == g.numNodes() - 1) {
-    		cout << "End of path :)\n";
-            mazeExitFound = true;
-        } else {
-            if(id == g.numNodes() - 1) {
-                g.mark(id);
-        		cout << "\n";
-                return true;
-            } else {
-                for(int i = 0; i < 4; i++)
-                //checks the four directions
-                {
-                    dst = setDirection(i, id, cols);
-                    if(!(dst < 0 | dst >= g.numNodes())) {
-                        if(!g.isVisited(dst)) {
-                            g.visit(id);
-                            if(g.isEdge(id, dst)) {
-                                if(findPathRecursive(g, dst)) {
-                                    g.mark(id);
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-        }
-		pathLength++;
-    }
-}
-*/
 
-/*
-void maze::findPathNonRecursive(graph &g)
-{
-    int id = 0;
-    int dst;
-    // Mark all the vertices as not visited
-    bool *visited = new bool[(cols*rows)];
-    for(int i = 0; i < (cols*rows); i++)
-        visited[i] = false;
-
-    // Create a queue for BFS
-    list<int> queue;
-
-    // Mark the current node as visited and enqueue it
-    visited[id] = true;
-    queue.push_back(id);
-
-    while(!queue.empty())
-    {
-        // Dequeue a vertex from queue and print it
-        id = queue.front();
-        cout << id << " ";
-        queue.pop_front();
-
-        // Get all adjacent vertices of the dequeued vertex id
-        // If a adjacent has not been visited, then mark it visited
-        // and enqueue it
-
-        for(int j = 0; j < 4; j++)
-        //checks the four directions
-        {
-            dst = setDirection(j, id, cols);
-            if(!(dst < 0 | dst >= g.numNodes())) {
-                if(!g.isVisited(dst)) {
-                    g.visit(id);
-                    if(g.isEdge(id, dst)) {
-                        if(!visited[*i])
-                        {
-                            visited[*i] = true;
-                            queue.push_back(*i);
-                        }
-                        if(id == g.numNodes() - 1) {
-                            g.mark(id);
-                    		cout << "\nFound the end";
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-*/
 void printStack(std::stack<int> theStack){
     int id = 0;
     cout << "{ ";
@@ -367,174 +325,89 @@ void printStack(std::stack<int> theStack){
     }
     cout << " }\n";
 }
-/*
-void maze::findPathNonRecursive(graph &g)
-{
-    int maxDepth = 1;
-    int destinationNode = 0;
-    int id = 0;
-    bool pathValid;
-    std::stack<int> pathStack;
-    std::stack<int> visitingStack;
-    std::stack<int> popNumbers;
-    int depthSinceBranch = 1;
-    visitingStack.push(id);
-    while (id != (g.numNodes() - 1)){
-        id = 0;
-        visitingStack.push(id);
-        while (!visitingStack.empty()){
-            cout << "\n\n---------------NEW NODE---------------\n";
-            id = visitingStack.top();
-            pathValid = false;
-            cout << "\nCurrent node visiting: " << id;
-            pathStack.push(id);
-            cout << "\n\npathStack thus far: ";
-            printStack(pathStack);
-            cout << "\nvisitingStack thus far: ";
-            printStack(visitingStack);
-            visitingStack.pop();
-            for(int i = 0; i < 4; i++)
-            //checks the four directions
-            {
-                cout << "\n----Iteration: " << i << "----";
-                destinationNode = setDirection(i, id, cols);
-                if(destinationNode > 0 && destinationNode <= g.numNodes()) {
-                    cout << "\nDestination is within bounds";
-                    if(!g.isVisited(destinationNode))
-                    {
-                        cout << "\nThe " << destinationNode << " node has not been visited";
-                        g.visit(id);
-                        if(g.isEdge(id, destinationNode))
-                        {
-                            cout << "\nThere is an edge";
-                            if (pathStack.size() <= maxDepth){
-                                cout << "\nPushed node: " << destinationNode;
-                                visitingStack.push(destinationNode);
-                                if (pathValid){
-                                    popNumbers.push(depthSinceBranch);
-                                } else {
-                                    depthSinceBranch++;
-                                }
-                                pathValid = true;
-                            } else if (i == 3){
-                                cout << "\nThe maxDepth has been reached";
-                            } else {
-                                cout << "\nThe maxDepth has been reached";
-                            }
-                        } else if (i == 3){
-                            cout << "\nThere is no edge to this node";
-                        } else {
-                            cout << "\nThere is no edge to this node";
-                        }
-                    } else if (i == 3){
-                        cout << "\nThe node has been visited";
-                    } else {
-                        cout << "\nThe node has been visited";
-                    }
-                } else {
-                    cout << "\nDestination Out of Bounds";
-                }
-            }
-            if (!pathValid){
-                int pops = popNumbers.size();
-                for (int x = 0; x < pops ; x++ ){
-                    cout << "\n-- PATHSTACK POP --";
-                    popNumbers.pop();
-                }
-                popNumbers.pop();
-            }
-        }
-        maxDepth++;
-        cout << "\n\n================= NEW MAX DEPTH =================n";
-        cout << "\n\nThe maxDepth is " << maxDepth << "\n\n";
-        while (!pathStack.empty()){
-            pathStack.pop();
-        }
-        while (!visitingStack.empty()){
-            visitingStack.pop();
-        }
-        g.clearVisit();
-    }
-}*/
+
 void maze::findPathNonRecursive(graph &g)
 {
     int id = 0;
+    int n;
     std::stack<int> pathStack;
     std::stack<int> visitingStack;
     std::stack<int> popNumbers;
     visitingStack.push(id);
+    n = visitingStack.top();
     while(!visitingStack.empty()) {
-        int n = visitingStack.top();
-        g.visit(n);
-        //cout << "\n n: " << n;
-        visitingStack.pop();
         if(n == g.numNodes() - 1) {
-            cout << "end of path\n";
+            pathStack.push(n);
             break;
         }
-        if(n + 1 < (g.numNodes() - 1) && (n + 1) >= 0) {
-            if(g.isEdge(n, n + 1) && !g.isVisited(n + 1)) {
-                visitingStack.push(n + 1);
+        //cout << "\n n: " << n;
+        if(!g.isVisited(n)) {
+            g.visit(n);
+            if(n + 1 <= (g.numNodes() - 1) && (n + 1) >= 0) {
+                if(g.isEdge(n, n + 1) && !g.isVisited(n + 1)) {
+                    visitingStack.push(n + 1);
+                }
             }
-        }
-        if(n + cols < (g.numNodes() - 1) && (n + cols) >= 0) {
-            if(g.isEdge(n, n + cols) && !g.isVisited(n + cols)) {
-                visitingStack.push(n + cols);
+            if(n + cols <= (g.numNodes() - 1) && (n + cols) >= 0) {
+                if(g.isEdge(n, n + cols) && !g.isVisited(n + cols)) {
+                    visitingStack.push(n + cols);
+                }
             }
-        }
-        if(n - 1 < (g.numNodes() - 1) && (n - 1) >= 0) {
-            if(g.isEdge(n, n - 1) && !g.isVisited(n - 1)) {
-                visitingStack.push(n - 1);
+            if((n - 1) <= (g.numNodes() - 1) && (n - 1) >= 0) {
+                if(g.isEdge(n, n - 1) && !g.isVisited(n - 1)) {
+                    visitingStack.push(n - 1);
+                }
             }
-        }
-        if(n - cols < (g.numNodes() - 1) && (n - cols) >= 0) {
-            if(g.isEdge(n, n - cols) && !g.isVisited(n - cols)) {
-                visitingStack.push(n - cols);
+            if((n - cols) <= (g.numNodes() - 1) && (n - cols) >= 0) {
+                if(g.isEdge(n, n - cols) && !g.isVisited(n - cols)) {
+                    visitingStack.push(n - cols);
+                }
             }
-        }
-        if(isNotDeadEnd(g, n, cols)) {
-            pathStack.push(n);
-        }
-        /*
-        while(!isNotDeadEnd(g, n, cols)) {
-            pathStack.pop();
-            n = pathStack.top();
-        }*/
 
+        }
+        pathStack.push(n);
+        if(isPath(g, n, cols)) {
+            n = visitingStack.top();
+            visitingStack.pop();
 
+        } else {
+            while(!isPath(g, n, cols)) {
+                pathStack.pop();
+                n = pathStack.top();
+
+            }
+        }
     }
-
-    printStack(visitingStack);
-    printStack(pathStack);
+    stackToSolutionMap(pathStack);
     while(!pathStack.empty()) {
         id = pathStack.top();
         g.mark(id);
         pathStack.pop();
     }
-    g.printNodesMarked();
 }
 
-bool maze::isNotDeadEnd(graph &g, int n, int cols) {
-    if(n + 1 < (g.numNodes() - 1) && (n + 1) >= 0) {
-        if(g.isEdge(n, n + 1) && !g.isVisited(n+1)) {
-            return true;
+bool maze::isPath(graph &g, int n, int cols) {
+    int dst;
+    bool p = false;
+    for(int i = 0; i < 4; i++) {
+        if(i == 0) {
+            dst = n + 1;
+        } else if(i == 1) {
+            dst = n + cols;
+        } else if(i == 2) {
+            dst = n - 1;
+        } else {
+            dst = n - cols;
         }
-    }
-    if(n + cols < (g.numNodes() - 1) && (n + cols) >= 0) {
-        if(g.isEdge(n, n + cols) && !g.isVisited(n + cols)) {
-            return true;
+        if (dst < g.numNodes() && dst >= 0) {
+            if(g.isEdge(n, dst) && !g.isVisited(dst)) {
+                p = true;
+            }
         }
+
     }
-    if(n - 1 < (g.numNodes() - 1) && (n - 1) >= 0) {
-        if(g.isEdge(n, n - 1) && !g.isVisited(n - 1)) {
-            return true;
-        }
-    }
-    if(n - cols < (g.numNodes() - 1) && (n - cols) >= 0) {
-        if(g.isEdge(n, n - cols) && !g.isVisited(n - cols)) {
-            return true;
-        }
-    }
+    return p;
+
 }
 
 int main()
@@ -559,10 +432,20 @@ int main()
       {
          maze m(fin);
 		 m.mapMazeToGraph(g);
-		 cout << g;
-		 m.print(0,0,2,2);
+		 m.print(0,0,1,0);
          g.clearVisit();
-		 m.findPathNonRecursive(g);
+         g.clearMark();
+         cout << "Recursive Path Finder\n";
+         cout << "*-------------------------------------------*\n";
+		 m.findPathRecursive(g, 0);
+         g.clearVisit();
+         m.printPath(g, 0);
+         g.clearMark();
+         g.clearVisit();
+         cout << "\n\nNon-Recursive Path Finder (Depth First Search)\n";
+         cout << "*-------------------------------------------*\n";
+         m.findPathNonRecursive(g);
+         m.printPathOnMaze();
          g.clearVisit();
          m.printPath(g, 0);
 
