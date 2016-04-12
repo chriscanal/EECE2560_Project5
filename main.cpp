@@ -32,7 +32,7 @@ class maze
       void mapMazeToGraph(graph &g);
 	  bool findPathRecursive(graph &g, int id);
       void findPathNonRecursive(graph &g);
-      void printPath(graph &g, int id);
+      void print(graph &g, int id);
       bool isPath(graph &g, int n, int cols);
 
       void stackToSolutionMap(std::stack<int> solutionStack);
@@ -266,7 +266,7 @@ bool maze::findPathRecursive(graph &g, int id) {
 
 }
 
-void maze::printPath(graph &g, int id) {
+void maze::print(graph &g, int id) {
     int dst;
     int dir;
     if(id == g.numNodes() - 1) {
@@ -282,19 +282,19 @@ void maze::printPath(graph &g, int id) {
                     dir = dst - id;
                     if(dir == -cols) {
                         cout << "Go up\n";
-                        printPath(g, dst);
+                        print(g, dst);
                         return;
                     } else if(dir == cols) {
                         cout << "Go down\n";
-                        printPath(g, dst);
+                        print(g, dst);
                         return;
                     } else if(dir == 1) {
                         cout << "Go right \n";
-                        printPath(g, dst);
+                        print(g, dst);
                         return;
                     } else if(dir == -1){
                         cout << "go left\n";
-                        printPath(g, dst);
+                        print(g, dst);
                         return;
                     } else {
                         cout << "bad direction\n";
@@ -439,7 +439,7 @@ int main()
          cout << "*-------------------------------------------*\n";
 		 m3.findPathRecursive(g3, 0);
          g3.clearVisit();
-         m3.printPath(g3, 0);
+         m3.print(g3, 0);
          g3.clearMark();
          g3.clearVisit();
          cout << "\n\nNon-Recursive Path Finder (Depth First Search)\n";
@@ -447,7 +447,7 @@ int main()
          m3.findPathNonRecursive(g3);
          m3.printPathOnMaze();
          g3.clearVisit();
-         m3.printPath(g3, 0);
+         m3.print(g3, 0);
 
 
       }
@@ -488,7 +488,7 @@ int main()
          cout << "*-------------------------------------------*\n";
 		 m2.findPathRecursive(g2, 0);
          g2.clearVisit();
-         m2.printPath(g2, 0);
+         m2.print(g2, 0);
          g2.clearMark();
          g2.clearVisit();
          cout << "\n\nNon-Recursive Path Finder (Depth First Search)\n";
@@ -496,7 +496,7 @@ int main()
          m2.findPathNonRecursive(g2);
          m2.printPathOnMaze();
          g2.clearVisit();
-         m2.printPath(g2, 0);
+         m2.print(g2, 0);
 
 
       }
@@ -537,7 +537,7 @@ int main()
          cout << "*-------------------------------------------*\n";
 		 m.findPathRecursive(g, 0);
          g.clearVisit();
-         m.printPath(g, 0);
+         m.print(g, 0);
          g.clearMark();
          g.clearVisit();
          cout << "\n\nNon-Recursive Path Finder (Depth First Search)\n";
@@ -545,7 +545,7 @@ int main()
          m.findPathNonRecursive(g);
          m.printPathOnMaze();
          g.clearVisit();
-         m.printPath(g, 0);
+         m.print(g, 0);
 
 
       }
