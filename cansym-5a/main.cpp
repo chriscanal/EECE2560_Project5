@@ -15,7 +15,6 @@
 #include "d_matrix.h"
 #include "Graph.h"
 #include <list>
-#include <queue>
 
 using namespace std;
 
@@ -35,7 +34,6 @@ class maze
       void findPathNonRecursive(graph &g);
       void print(graph &g, int id);
       bool isPath(graph &g, int n, int cols);
-      void breadthFirst(graph& g);
 
       void stackToSolutionMap(std::stack<int> solutionStack);
       void printPathOnMaze();
@@ -412,49 +410,6 @@ bool maze::isPath(graph &g, int n, int cols) {
 
 }
 
-void maze::breadthFirst(graph& g) {
-    std::queue<std::queue<int> > pathQueue;
-    std::queue<int> initPath;
-    initPath.push(0);
-    pathQueue.push(initPath);
-    int currId = 0;
-    int dst;
-    std::queue<int> currPath;
-    while(currId != g.numNodes() - 1) {
-        currPath = pathQueue.front();
-        pathQueue.pop();
-        currId = currPath.back();
-        g.visit(currId);
-        if(currId == g.numNodes() - 1) {
-            int idMark;
-            while(currPath.size() != 0) {
-                idMark = currPath.front();
-                g.mark(idMark);
-                currPath.pop();
-
-            }
-            break;
-        }
-        for(int i = 0; i < 4; i++) {
-            dst = setDirection(i, currId, cols);
-            if(!(dst < 0 | dst >= g.numNodes()) && !g.isVisited(dst)) {
-                if(g.isEdge(currId, dst)) {
-                    if(i == 0) {
-                        currPath.push(dst);
-                        pathQueue.push(currPath);
-                    } else {
-                        std::queue<int> newPath;
-                        newPath = currPath;
-                        newPath.push(dst);
-                        pathQueue.push(newPath);
-                    }
-                }
-
-            }
-        }
-    }
-}
-
 int main()
 {
    char x;
@@ -480,10 +435,7 @@ int main()
 		 m3.print(0,0,1,0);
          g3.clearVisit();
          g3.clearMark();
-         m3.breadthFirst(g3);
-         g3.clearVisit();
-         m3.print(g3, 0);
-         /*cout << "Recursive Path Finder\n";
+         cout << "Recursive Path Finder\n";
          cout << "*-------------------------------------------*\n";
 		 m3.findPathRecursive(g3, 0);
          g3.clearVisit();
@@ -495,7 +447,7 @@ int main()
          m3.findPathNonRecursive(g3);
          m3.printPathOnMaze();
          g3.clearVisit();
-         m3.print(g3, 0);*/
+         m3.print(g3, 0);
 
 
       }
@@ -510,7 +462,7 @@ int main()
       cout << ex.what() << endl; exit(1);
    }
    fin.close();
-/*
+
    // Read the maze from the file.
   fileName = "maze2.txt";
   cout << "NOW OPENING: " << fileName << endl;
@@ -608,6 +560,6 @@ int main()
       cout << ex.what() << endl; exit(1);
    }
 
-*/
+
 
 }
