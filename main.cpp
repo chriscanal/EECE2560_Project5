@@ -16,6 +16,7 @@
 #include "Graph.h"
 #include <list>
 #include <queue>
+#include <unordered_map>
 
 using namespace std;
 
@@ -36,6 +37,7 @@ class maze
       void print(graph &g, int id);
       bool isPath(graph &g, int n, int cols);
       void breadthFirst(graph& g);
+      void findShortestPath2(graph &g);
 
       void stackToSolutionMap(std::stack<int> solutionStack);
       void printPathOnMaze();
@@ -449,10 +451,66 @@ void maze::breadthFirst(graph& g) {
                         pathQueue.push(newPath);
                     }
                 }
-
             }
         }
     }
+}
+
+void maze::findShortestPath2(graph &g) {
+    g.setEdgeWeights(1);
+    std::unordered_map<int,std::queue<int> > nodeMap;
+    int k = 0;
+    int currId = 0;
+    int dst;
+    while(k < g.numNodes()) {
+        if(k == 0) {
+            std::queue<int> initPath;
+            initPath.push(k);
+            nodeMap[k] = initPath;
+        } else {
+            std::queue<int> emptyPath;
+            nodeMap[k] = emptyPath;
+        }
+        k++;
+    }
+    while(!g.allEdgesVisited()) {
+        //cout << "\nvisiting node: " << currId;
+        g.visit(currId);
+        for(int i = 0; i < 4; i++) {
+            dst = setDirection(i, currId, cols);
+            if(!(dst < 0 | dst >= g.numNodes())) {
+                if(g.isEdge(currId, dst)) {
+                    std::queue<int> newPath = nodeMap[currId];
+                    newPath.push(dst);
+                    if(nodeMap[dst].size() != 0) {
+                        if(nodeMap[dst].size() > newPath.size()) {
+                            nodeMap[dst] = newPath;
+                        }
+                    } else {
+                        nodeMap[dst] = newPath;
+                    }
+
+                    g.visit(currId, dst);
+                }
+
+            }
+        }
+        currId++;
+    }
+    std::queue<int> finalPath;
+
+
+    finalPath = nodeMap[(g.numNodes() - 1)];
+    int cur;
+    while(finalPath.size() != 0) {
+
+        cur = finalPath.front();
+        cout << "\nvisiting node: " << cur;
+        finalPath.pop();
+        g.mark(cur);
+    }
+
+
 }
 
 int main()
@@ -480,7 +538,8 @@ int main()
 		 m3.print(0,0,1,0);
          g3.clearVisit();
          g3.clearMark();
-         m3.breadthFirst(g3);
+         m3.findShortestPath2(g3);
+         cout << "found shortest pth 2\n";
          g3.clearVisit();
          m3.print(g3, 0);
          /*cout << "Recursive Path Finder\n";

@@ -407,6 +407,8 @@ class graph
    void clearMark();
    bool allNodesMarked();
 
+   void setEdgeWeights(int weight);
+
    void visit(int i);
    void visit(int i, int j);
    void unVisit(int i);
@@ -415,6 +417,8 @@ class graph
    bool isVisited(int i) const;
    void clearVisit();
    bool allNodesVisited();
+   bool allEdgesVisited();
+
 
   private:
    matrix<edge> edges;
@@ -688,6 +692,19 @@ void graph::printEdges() const
       }
 }
 
+void graph::setEdgeWeights(int weight)
+// Print edge information about the graph.
+{
+   cout << "Num edges: " << numEdges() << endl;
+
+   for (int i = 0; i < numNodes(); i++)
+      for (int j = 0; j < numNodes(); j++)
+      {
+	 if (edges[i][j].isValid())
+	    edges[i][j].setWeight(weight);
+      }
+}
+
 ostream &operator<<(ostream &ostr, const graph &g)
 // Print all information about the graph.
 {
@@ -896,6 +913,21 @@ bool graph::allNodesVisited()
       if (!isVisited(i))
 	 return false;
 
+   return true;
+}
+
+bool graph::allEdgesVisited()
+// Print edge information about the graph.
+{
+   for (int i = 0; i < numNodes(); i++) {
+       for (int j = 0; j < numNodes(); j++) {
+           if (edges[i][j].isValid()) {
+               if(!edges[i][j].isVisited()) {
+                   return false;
+               }
+           }
+       }
+   }
    return true;
 }
 
