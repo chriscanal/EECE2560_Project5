@@ -42,6 +42,7 @@ class maze
       void stackToSolutionMap(std::stack<int> solutionStack);
       void printPathOnMaze();
       void setSolutionMap(int i, int j);
+      void queueToSolutionMap(std::queue<int> solutionQueue);
 
    private:
       int rows; // number of rows in the maze
@@ -136,6 +137,19 @@ void maze::stackToSolutionMap(std::stack<int> solutionStack){
         j = current%cols;
         solutionMap[i][j] = true;
         solutionStack.pop();
+    }
+}
+
+void maze::queueToSolutionMap(std::queue<int> solutionQueue){
+    int current = 0;
+    int i;
+    int j;
+    while (!solutionQueue.empty()){
+        current = solutionQueue.front();
+        i = current/cols;
+        j = current%cols;
+        solutionMap[i][j] = true;
+        solutionQueue.pop();
     }
 }
 
@@ -330,6 +344,21 @@ void printStack(std::stack<int> theStack){
     cout << " }\n";
 }
 
+void printQueue(std::queue<int> theQueue){
+    int id = 0;
+    cout << "{ ";
+    while (theQueue.size() > 0){
+        id = theQueue.front();
+        theQueue.pop();
+        cout << id;
+        if (theQueue.size() == 0){
+        } else {
+            cout << ", ";
+        }
+    }
+    cout << " }\n";
+}
+
 void maze::findPathNonRecursive(graph &g)
 {
     int id = 0;
@@ -462,45 +491,68 @@ void maze::findShortestPath2(graph &g) {
     int k = 0;
     int currId = 0;
     int dst;
+    std::queue<int> * initPath;
+    std::queue<int> * emptyPath;
+    std::queue<int> * newPath;
     while(k < g.numNodes()) {
         if(k == 0) {
-            std::queue<int> initPath;
-            initPath.push(k);
-            nodeMap[k] = initPath;
+            initPath = new std::queue<int>;
+            initPath->push(k);
+            nodeMap[k] = *initPath;
         } else {
-            std::queue<int> emptyPath;
-            nodeMap[k] = emptyPath;
+            emptyPath = new std::queue<int>;
+            nodeMap[k] = *emptyPath;
         }
         k++;
     }
-    while(!g.allEdgesVisited()) {
+    while(!g.allEdgesVisited() && currId < g.numNodes()) {
         //cout << "\nvisiting node: " << currId;
-        g.visit(currId);
+        if (currId < g.numNodes()){
+            g.visit(currId);
+        }
         for(int i = 0; i < 4; i++) {
             dst = setDirection(i, currId, cols);
-            if(!(dst < 0 | dst >= g.numNodes())) {
+            cout << "\n-------------------------------------";
+            cout << "\nSet Direction:" << i;
+            if(dst >= 0 && dst < g.numNodes() ) {
+                cout << "\nDirection " << i << " in bounds";
                 if(g.isEdge(currId, dst)) {
-                    std::queue<int> newPath = nodeMap[currId];
-                    newPath.push(dst);
-                    if(nodeMap[dst].size() != 0) {
-                        if(nodeMap[dst].size() > newPath.size()) {
-                            nodeMap[dst] = newPath;
+                    cout << "\nDestination " << dst << " is valid from dst from node " << currId;
+                    newPath = new std::queue<int>;
+                    *newPath = nodeMap[currId];
+                    newPath->push(dst);
+                    cout << "\nPath Que:\n";
+                    printQueue(*newPath);
+                    cout << "\n";
+                    queueToSolutionMap(*newPath);
+                    cout << "\n";
+                    printPathOnMaze();
+                    cout << "\n";
+                    if(g.isVisited(dst)) {
+                        if( nodeMap[dst].size() > newPath->size() ) {
+                            nodeMap[dst] = *newPath;
                         }
-                    } else {
-                        nodeMap[dst] = newPath;
+                    } else  {
+                        nodeMap[dst] = *newPath;
                     }
-
+                    cout << "\nVisiting node " << dst;
+                    cout << "\nCurrent Id " << currId;
+                    g.visit(dst);
                     g.visit(currId, dst);
+                    cout << "\n-------------------------------------";
                 }
-
             }
         }
         currId++;
+    }
+    for(int i = 0; i < g.numNodes() - 1; i++) {
+        cout << "path to node: " << i << "/path size: " << nodeMap[i].size() << endl;
     }
     std::queue<int> finalPath;
 
 
     finalPath = nodeMap[(g.numNodes() - 1)];
+    queueToSolutionMap(finalPath);
     int cur;
     while(finalPath.size() != 0) {
 
@@ -518,7 +570,7 @@ int main()
    char x;
    ifstream fin;
    // Read the maze from the file.
-   string fileName = "maze1.txt";
+   string fileName = "maze3.txt";
    cout << "\n OPENING: " << fileName << endl;
 
    fin.open(fileName.c_str());
@@ -542,6 +594,7 @@ int main()
          cout << "found shortest pth 2\n";
          g3.clearVisit();
          m3.print(g3, 0);
+         m3.printPathOnMaze();
          /*cout << "Recursive Path Finder\n";
          cout << "*-------------------------------------------*\n";
 		 m3.findPathRecursive(g3, 0);
